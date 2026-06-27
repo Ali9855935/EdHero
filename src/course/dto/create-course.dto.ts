@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -31,16 +32,23 @@ export class CreateCourseDto {
   @ApiProperty({
     example: 4.85,
   })
+
   @IsNumber()
-  rating!: number;
+  @IsNotEmpty()
+  @Transform(({ value }) => Number(value)) // 👈 String ko number banayega
+  rating: number;
 
   @ApiProperty({
     example: ['EC-Council CEH', 'Placement Support'],
   })
   @IsArray()
   @IsString({ each: true })
-  tags!: string[];
+  @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+  tags: string[];
 
+
+  // @ApiPropertyOptional({ example: 'Enter the serviceId' })
+  // @IsOptional()
   // @IsMongoId()
   // trainer!: string;
 
@@ -60,10 +68,14 @@ export class CreateCourseDto {
       'Placement assurance with 250+ partners',
     ],
   })
+  @IsArray()
   @IsString({ each: true })
-  highlights!: string[];
+  @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+  highlights: string[];
 
   @IsBoolean()
   @IsOptional()
-  isActive?: boolean = true;
+  @ApiProperty({ type: 'string', format: 'binary', description: 'Course Thumbnail File' })
+  thumbnail: any; // Swagger isse file upload ka button bana dega
+
 }

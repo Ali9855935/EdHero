@@ -21,12 +21,12 @@ import { updateAdminDto } from './dto/update-admin.dto';
 
 @Controller('admins')
 export class AdminsController {
-  constructor(private adminService: AdminsService) {}
+  constructor(private adminService: AdminsService) { }
 
   @Patch('Update-Profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.TRAINER)
   updateProfile(@Body() body: updateAdminDto, @Req() req) {
     return this.adminService.updateAdminProfile(req.user.userId, body);
   }
@@ -67,12 +67,31 @@ export class AdminsController {
     return this.adminService.getAllAdmin();
   }
 
-  @Delete(':id')
+
+  @Get('find-Trainer')
+  @ApiTags('getByTrainer')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @ApiBearerAuth()
+  findTrainer() {
+    return this.adminService.getTrainer();
+  }
+
+  @Delete('/delete-admin/:id')
   @ApiTags('delete-Admin')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
   deleteAdmin(@Param('id') id: string) {
     return this.adminService.deleteAdmin(id);
+  }
+
+  @Delete('/delete-trainer/:id')
+  @ApiTags('delete-Trainer')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  deleteTrainer(@Param('id') id: string) {
+    return this.adminService.deleteTrainer(id);
   }
 }

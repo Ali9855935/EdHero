@@ -27,15 +27,26 @@ export class Course {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Admin',
+    required: true,
+  })
+  createdBy!: Admin | Types.ObjectId;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin',
+    required: false,
     default: null,
   })
-  trainer!: Admin | Types.ObjectId;
+  trainer!: Admin | Types.ObjectId | null;
 
   @Prop({ required: true })
   duration!: string;
 
   @Prop({ type: [String], default: [] })
   highlights!: string[];
+
+  @Prop({ default: 0 })
+  enrolledCount!: number;
 
   @Prop({ default: true })
   isActive!: boolean;

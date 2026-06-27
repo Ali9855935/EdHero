@@ -69,6 +69,15 @@ export class AdminsService {
     }
   }
 
+  async getTrainer() {
+    try {
+      const trainer = await this.adminModel.find({ role: Role.TRAINER });
+      return trainer;
+    } catch (error: any) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
   async deleteAdmin(id: string) {
     try {
       const admin = await this.adminModel.findOne({ _id: id });
@@ -82,6 +91,22 @@ export class AdminsService {
       await this.adminModel.findOneAndDelete({ _id: id });
       return {
         message: 'Admin Deleted Successfully By Super-Admin ',
+      };
+    } catch (error: any) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+
+  async deleteTrainer(id: string) {
+    try {
+      const trainer = await this.adminModel.findOne({ _id: id });
+      if (!trainer) {
+        throw new NotFoundException('Trainer Not Found');
+      }
+      await this.adminModel.findOneAndDelete({ _id: id });
+      return {
+        message: 'Trainer Deleted Successfully By Super-Admin ',
       };
     } catch (error: any) {
       throw new BadRequestException(error.message);
@@ -116,7 +141,7 @@ export class AdminsService {
       const admin = await this.adminModel.findById(userId);
 
       if (!admin) {
-        throw new NotFoundException('Admin Not Found');
+        throw new NotFoundException('Enter Valid Details');
       }
 
       if (dto.name) {
