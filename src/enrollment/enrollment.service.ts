@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,18 +13,41 @@ export class EnrollmentService {
     @InjectModel(Course.name) private readonly courseModel: Model<Course>,
   ) { }
   async create(dto: CreateEnrollmentDto) {
-    const enrollment = new this.enrollmentModel(dto);
-    const saveEnrollment = await enrollment.save();
-    await this.courseModel.findByIdAndUpdate({ _id: dto.course }, { $inc: { enrolledCount: 1 } });
+    try {
+      const course = await this.courseModel.findById(dto.course);
+      if (!course) {
+        throw new BadRequestException('Course not found');
+      }
+      const enrollment = new this.enrollmentModel(dto);
+      const saveEnrollment = await enrollment.save();
+      await this.courseModel.findByIdAndUpdate({ _id: dto.course }, { $inc: { enrolledCount: 1 } });
 
-    return {
-      message: 'Enrollment created successfully',
-      data: saveEnrollment
-    };
+      return {
+        message: 'Enrollment created successfully',
+        data: saveEnrollment
+      };
+
+    } catch (error) {
+      return {
+        message: 'Enrollment creation failed',
+        error: error.message
+      }
+    }
   }
 
   async findAll() {
-    return this.enrollmentModel.find().populate('course', 'title');
+    try {
+      const enrollments = await this.enrollmentModel.find().populate('course', 'title');
+      return {
+        message: `Enrollments Found Successfully`,
+        data: enrollments
+      }
+    } catch (error) {
+      return {
+        message: `Enrollments Not Found`,
+        error: error.message
+      }
+    }
   }
 
   findOne(id: number) {
