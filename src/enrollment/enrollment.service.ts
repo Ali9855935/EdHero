@@ -5,12 +5,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Enrollment } from './entities/enrollment.entity';
 import { Model } from 'mongoose';
 import { Course } from 'src/course/entities/course.entity';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class EnrollmentService {
   constructor(
     @InjectModel(Enrollment.name) private readonly enrollmentModel: Model<Enrollment>,
     @InjectModel(Course.name) private readonly courseModel: Model<Course>,
+    private readonly mailService: MailService,
   ) { }
   async create(dto: CreateEnrollmentDto) {
     try {
@@ -20,8 +22,8 @@ export class EnrollmentService {
       }
       const enrollment = new this.enrollmentModel(dto);
       const saveEnrollment = await enrollment.save();
-      await this.courseModel.findByIdAndUpdate({ _id: dto.course }, { $inc: { enrolledCount: 1 } });
-
+      await this.courseModel.findByIdAndUpdate(dto.course, { $inc: { enrolledCount: 1 } });
+      await this.mailService.sendEnrollmentMail(saveEnrollment.email, saveEnrollment.name, course.title)
       return {
         message: 'Enrollment created successfully',
         data: saveEnrollment
