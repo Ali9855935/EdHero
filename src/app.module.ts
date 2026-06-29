@@ -9,6 +9,7 @@ import { CourseModule } from './course/course.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
 import { PlacementModule } from './placement/placement.module';
 import { MailModule } from './mail/mail.module';
+import { EnrollmentqueryModule } from './enrollmentquery/enrollmentquery.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MailModule } from './mail/mail.module';
     EnrollmentModule,
     PlacementModule,
     MailModule,
+    EnrollmentqueryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

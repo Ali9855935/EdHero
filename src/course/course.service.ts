@@ -46,62 +46,110 @@ export class CourseService {
   }
 
   async findAll() {
-    const course = await this.courseModel.find().populate('trainer', 'name role').exec();
-    return course;
+    try {
+      const course = await this.courseModel.find().populate('trainer', 'name role').exec();
+      return {
+        message: `Courses Found Successfully`,
+        data: course
+      };
+    } catch (error) {
+      return {
+        message: `Courses Not Found`,
+        error: error.message
+      }
+    }
   }
 
   async findCourseByTrainer(trainerId: Types.ObjectId) {
-    const course = await this.courseModel.find({ trainer: trainerId }).populate('trainer', 'name role').exec();
-    return course;
+    try {
+      const course = await this.courseModel.find({ trainer: trainerId }).populate('trainer', 'name role').exec();
+      return {
+        message: `Courses Found By Trainer Successfully`,
+        data: course
+      };
+    } catch (error) {
+      return {
+        message: `Courses Not Found`,
+        error: error.message
+      }
+    }
   }
 
   async findCourseByAdmin(adminId: string) {
-    // console.log(adminId);
+    try {
+      // console.log(adminId);
 
-    const course = await this.courseModel.find({ createdBy: new Types.ObjectId(adminId) }).populate('createdBy', 'name role').exec();
-    return course;
+      const course = await this.courseModel.find({ createdBy: new Types.ObjectId(adminId) }).populate('createdBy', 'name role').exec();
+      return {
+        message: `Courses Found By Admin Successfully`,
+        data: course
+      };
+    } catch (error) {
+      return {
+        message: `Courses Not Found`,
+        error: error.message
+      }
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} course`;
+  async findOne(id: string) {
+    try {
+      const course = await this.courseModel.findById(id).populate('trainer', 'name role').exec();
+      return {
+        message: `Course Found Successfully`,
+        data: course
+      };
+    } catch (error) {
+      return {
+        message: `Course Not Found`,
+        error: error.message
+      }
+    }
   }
 
   async updateCourse(id: string, updateCourseDto: UpdateCourseDto, file: Express.Multer.File) {
-    const course = await this.courseModel.findById(id)
-    if (!course) {
-      throw new BadRequestException('Course not found');
-    }
+    try {
+      const course = await this.courseModel.findById(id)
+      if (!course) {
+        throw new BadRequestException('Course not found');
+      }
 
-    if (file) {
-      // ✅ Delete old file
-      if (course.thumbnail) {
-        const oldPath = join(process.cwd(), 'uploads', course.thumbnail);
-        try {
-          await fs.unlink(oldPath);
-        } catch (error) {
-          // Don't throw error if old file can't be deleted
-          console.warn('Failed to delete old thumbnail:', error);
+      if (file) {
+        // ✅ Delete old file
+        if (course.thumbnail) {
+          const oldPath = join(process.cwd(), 'uploads', course.thumbnail);
+          try {
+            await fs.unlink(oldPath);
+          } catch (error) {
+            // Don't throw error if old file can't be deleted
+            console.warn('Failed to delete old thumbnail:', error);
+          }
+        }
+        // ✅ Set new file
+        course.thumbnail = file.filename;
+      }
+
+      // ✅ Update all other fields
+      const updateFields = Object.keys(updateCourseDto);
+
+      for (const field of updateFields) {
+        // Only update if field is present in DTO
+        if (updateCourseDto[field] !== undefined) {
+          course[field] = updateCourseDto[field];
         }
       }
-      // ✅ Set new file
-      course.thumbnail = file.filename;
-    }
 
-    // ✅ Update all other fields
-    const updateFields = Object.keys(updateCourseDto);
-
-    for (const field of updateFields) {
-      // Only update if field is present in DTO
-      if (updateCourseDto[field] !== undefined) {
-        course[field] = updateCourseDto[field];
+      const updated = await course.save();
+      return {
+        message: 'update successfull',
+        updated
+      };
+    } catch (error) {
+      return {
+        message: 'update failed',
+        error: error.message
       }
     }
-
-    const updated = await course.save();
-    return {
-      message: 'update successfull',
-      updated
-    };
   }
 
   async deleteTrainer(id: string) {
