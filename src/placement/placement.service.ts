@@ -2,25 +2,92 @@ import { Injectable } from '@nestjs/common';
 import { CreatePlacementDto } from './dto/create-placement.dto';
 import { UpdatePlacementDto } from './dto/update-placement.dto';
 
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Placement, PlacementDocument } from './entities/placement.entity';
+
+import { unlinkSync, existsSync } from 'fs';
+import { resolve } from 'path';
+import { NotFoundException } from '@nestjs/common';
+
+
 @Injectable()
 export class PlacementService {
-  create(createPlacementDto: CreatePlacementDto) {
-    return 'This action adds a new placement';
+  constructor(
+    @InjectModel(Placement.name)
+    private readonly placementModel: Model<PlacementDocument>,
+  ) { }
+
+  async create(createPlacementDto: CreatePlacementDto) {
+    return await this.placementModel.create(createPlacementDto);
   }
 
-  findAll() {
-    return `This action returns all placement`;
+  async findAll() {
+    return await this.placementModel
+      .find()
+      .populate('enrollment', 'name')
+      .exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} placement`;
+  async findOne(id: string) {
+    return await this.placementModel.findById(id)
+      .populate('enrollment', 'name')
+      .exec();
   }
 
-  update(id: number, updatePlacementDto: UpdatePlacementDto) {
-    return `This action updates a #${id} placement`;
+  async update(id: string, updatePlacementDto: UpdatePlacementDto) {
+    const placement = await this.placementModel.findById(id);
+
+    if (!placement) {
+      throw new NotFoundException('Placement not found');
+    }
+
+    if (
+      updatePlacementDto.image &&
+      placement.image &&
+      updatePlacementDto.image !== placement.image
+    ) {
+      const oldImagePath = resolve(
+        process.cwd(),
+        'uploads/placements',
+        placement.image,
+      );
+
+      if (existsSync(oldImagePath)) {
+        unlinkSync(oldImagePath);
+      }
+    }
+
+    return this.placementModel.findByIdAndUpdate(
+      id,
+      updatePlacementDto,
+      { new: true },
+    );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} placement`;
+  async remove(id: string) {
+    const placement = await this.placementModel.findById(id);
+
+    if (!placement) {
+      throw new NotFoundException('Placement not found');
+    }
+
+    if (placement.image) {
+      const imagePath = resolve(
+        process.cwd(),
+        'uploads/placements',
+        placement.image,
+      );
+
+      if (existsSync(imagePath)) {
+        unlinkSync(imagePath);
+      }
+    }
+
+    await this.placementModel.findByIdAndDelete(id);
+
+    return {
+      message: 'Placement deleted successfully',
+    };
   }
 }
