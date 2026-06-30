@@ -10,7 +10,7 @@ import { EnrollmentModule } from './enrollment/enrollment.module';
 import { PlacementModule } from './placement/placement.module';
 import { MailModule } from './mail/mail.module';
 import { EnrollmentqueryModule } from './enrollmentquery/enrollmentquery.module';
-
+import { CouponModule } from './coupon/coupon.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -32,8 +32,9 @@ import { EnrollmentqueryModule } from './enrollmentquery/enrollmentquery.module'
     PlacementModule,
     MailModule,
     EnrollmentqueryModule,
+    CouponModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

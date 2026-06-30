@@ -9,6 +9,7 @@ import * as fs from 'fs/promises';
 import { join, extname } from 'path';
 import { Admin, Role } from 'src/admins/schemas/admin.schema';
 import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
+import { Coupon } from 'src/coupon/entities/coupon.entity';
 
 @Injectable()
 export class CourseService {
@@ -18,7 +19,10 @@ export class CourseService {
     , @InjectModel(Admin.name)
     private readonly adminModel: Model<Admin>
     , @InjectModel(Enrollment.name)
-    private readonly EnrollmentModel: Model<Enrollment>) { }
+    private readonly EnrollmentModel: Model<Enrollment>
+    , @InjectModel(Coupon.name)
+    private readonly couponModel: Model<Coupon>
+  ) { }
 
   async create(dto: CreateCourseDto, file: Express.Multer.File, admin: any) {
     try {
@@ -218,6 +222,7 @@ export class CourseService {
   async deleteCourse(id: string) {
     try {
       const course = await this.courseModel.findOne({ _id: id, isDeleted: false });
+      const coupon = await this.couponModel.updateMany({ courses: id }, { $set: { isActive: false } })
       if (!course) {
         throw new BadRequestException('Course not found');
       }

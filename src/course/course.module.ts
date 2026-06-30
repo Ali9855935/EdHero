@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Course, CourseSchema } from './entities/course.entity';
 import { Admin, AdminSchema } from 'src/admins/schemas/admin.schema';
 import { Enrollment, EnrollmentSchema } from 'src/enrollment/entities/enrollment.entity';
+import { Coupon, CouponSchema } from 'src/coupon/entities/coupon.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,10 @@ import { Enrollment, EnrollmentSchema } from 'src/enrollment/entities/enrollment
       {
         name: Enrollment.name,
         schema: EnrollmentSchema,
+      },
+      {
+        name: Coupon.name,
+        schema: CouponSchema,
       },
     ]),
   ],
