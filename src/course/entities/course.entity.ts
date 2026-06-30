@@ -50,6 +50,9 @@ export class Course {
 
   @Prop({ default: true })
   isActive!: boolean;
+
+  @Prop({ default: false })
+  isDeleted!: boolean;
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);

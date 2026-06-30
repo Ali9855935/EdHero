@@ -116,21 +116,8 @@ export class AdminsService {
   async getAllAdmin() {
     try {
       const admins = await this.adminModel.find();
-      const result = await Promise.all(
-        admins.map(async (admin) => {
-          const propertyCount = await this.courseModel.countDocuments({
-            createdBy: admin._id,
-          });
-          return {
-            _id: admin._id,
-            name: admin.name,
-            email: admin.email,
-            role: admin.role,
-            propertyCount,
-          };
-        }),
-      );
-      return result;
+
+      return admins;
     } catch (error: any) {
       throw new BadRequestException(error.message);
     }

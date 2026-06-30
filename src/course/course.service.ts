@@ -8,6 +8,7 @@ import { Course } from './entities/course.entity';
 import * as fs from 'fs/promises';
 import { join, extname } from 'path';
 import { Admin, Role } from 'src/admins/schemas/admin.schema';
+import { Enrollment } from 'src/enrollment/entities/enrollment.entity';
 
 @Injectable()
 export class CourseService {
@@ -15,7 +16,9 @@ export class CourseService {
   constructor(@InjectModel(Course.name)
   private readonly courseModel: Model<Course>
     , @InjectModel(Admin.name)
-    private readonly adminModel: Model<Admin>) { }
+    private readonly adminModel: Model<Admin>
+    , @InjectModel(Enrollment.name)
+    private readonly EnrollmentModel: Model<Enrollment>) { }
 
   async create(dto: CreateCourseDto, file: Express.Multer.File, admin: any) {
     try {
@@ -47,10 +50,16 @@ export class CourseService {
 
   async findAll() {
     try {
-      const course = await this.courseModel.find().populate('trainer', 'name role').exec();
+      const course = await this.courseModel.find({ isDeleted: false }).populate('createdBy trainer', 'name role').exec();
+
+      const count = await this.courseModel.countDocuments({ isDeleted: false })
+
+
+
       return {
         message: `Courses Found Successfully`,
-        data: course
+        data: course,
+        coursecount: count
       };
     } catch (error) {
       return {
@@ -62,7 +71,7 @@ export class CourseService {
 
   async findCourseByTrainer(trainerId: Types.ObjectId) {
     try {
-      const course = await this.courseModel.find({ trainer: trainerId }).populate('trainer', 'name role').exec();
+      const course = await this.courseModel.find({ trainer: trainerId, isDeleted: false }).populate('createdBy ', 'name role').exec();
       return {
         message: `Courses Found By Trainer Successfully`,
         data: course
@@ -79,7 +88,7 @@ export class CourseService {
     try {
       // console.log(adminId);
 
-      const course = await this.courseModel.find({ createdBy: new Types.ObjectId(adminId) }).populate('createdBy', 'name role').exec();
+      const course = await this.courseModel.find({ createdBy: new Types.ObjectId(adminId), isDeleted: false }).populate('createdBy trainer', 'name role').exec();
       return {
         message: `Courses Found By Admin Successfully`,
         data: course
@@ -94,7 +103,7 @@ export class CourseService {
 
   async findOne(id: string) {
     try {
-      const course = await this.courseModel.findById(id).populate('trainer', 'name role').exec();
+      const course = await this.courseModel.find({ id, isDeleted: false }).populate('trainer', 'name role').exec();
       return {
         message: `Course Found Successfully`,
         data: course
@@ -109,7 +118,7 @@ export class CourseService {
 
   async updateCourse(id: string, updateCourseDto: UpdateCourseDto, file: Express.Multer.File) {
     try {
-      const course = await this.courseModel.findById(id)
+      const course = await this.courseModel.findOne({ _id: id, isDeleted: false })
       if (!course) {
         throw new BadRequestException('Course not found');
       }
@@ -181,7 +190,7 @@ export class CourseService {
 
   async assignTrainer(courseId: string, trainerId: string) {
     try {
-      const course = await this.courseModel.findById(courseId)
+      const course = await this.courseModel.findOne({ _id: courseId, isDeleted: false })
       if (!course) {
         throw new BadRequestException('Course not found');
       }
@@ -206,5 +215,40 @@ export class CourseService {
     }
   }
 
+  async deleteCourse(id: string) {
+    try {
+      const course = await this.courseModel.findOne({ _id: id, isDeleted: false });
+      if (!course) {
+        throw new BadRequestException('Course not found');
+      }
+      course.isDeleted = true;
+      await course.save();
+      return {
+        message: 'Course deleted successfully',
+        course,
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async findIsDeleteCourse() {
+    try {
+      const course = await this.courseModel.find({ isDeleted: true }).populate(`trainer`, `name role`);
+      if (!course) {
+        throw new BadRequestException('Course not found');
+      }
+
+      return {
+        message: 'Deleted Course Get successfully',
+        course,
+      };
+
+    }
+    catch (error) {
+      throw new BadRequestException(error.message);
+    }
+
+  }
 
 }

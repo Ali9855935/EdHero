@@ -105,6 +105,16 @@ export class CourseController {
     return this.courseService.findCourseByAdmin(req.user.userId);
   }
 
+
+  @Get('get-isdelete-course')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @ApiBearerAuth()
+  findIsDeleteCourse() {
+    return this.courseService.findIsDeleteCourse();
+  }
+
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.courseService.findOne(id);
@@ -158,4 +168,14 @@ export class CourseController {
   remove(@Param('id') id: string) {
     return this.courseService.deleteTrainer(id);
   }
+
+
+  @Delete('/delete-course/:id')
+  deletecourse(@Param('id') id: string) {
+    return this.courseService.deleteCourse(id);
+  }
+
+
+
+
 }

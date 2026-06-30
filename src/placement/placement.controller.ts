@@ -32,8 +32,8 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorators';
 import { Role } from 'src/admins/schemas/admin.schema';
 
-@ApiTags('Placement')
 @Controller('placement')
+@ApiTags()
 export class PlacementController {
   constructor(private readonly placementService: PlacementService) { }
 
@@ -135,7 +135,7 @@ export class PlacementController {
       },
     },
   })
-  @Patch('update-placement/:id')
+  @Patch('/update-placement/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
