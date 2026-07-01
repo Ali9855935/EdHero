@@ -11,6 +11,7 @@ import { PlacementModule } from './placement/placement.module';
 import { MailModule } from './mail/mail.module';
 import { EnrollmentqueryModule } from './enrollmentquery/enrollmentquery.module';
 import { CouponModule } from './coupon/coupon.module';
+import { EventModule } from './events/events.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,6 +34,7 @@ import { CouponModule } from './coupon/coupon.module';
     MailModule,
     EnrollmentqueryModule,
     CouponModule,
+    EventModule,
   ],
   controllers: [AppController],
   providers: [AppService],
