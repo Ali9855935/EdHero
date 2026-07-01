@@ -42,11 +42,17 @@ export class CouponController {
   }
 
   @Patch('update-coupon/:id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   update(@Param('id') id: string, @Body() updateCouponDto: UpdateCouponDto) {
     return this.couponService.update(id, updateCouponDto);
   }
 
-  @Delete(':id')
+  @Delete('delete-coupon/:id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   remove(@Param('id') id: string) {
     return this.couponService.remove(id);
   }

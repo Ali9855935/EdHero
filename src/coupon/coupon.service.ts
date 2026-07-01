@@ -23,6 +23,8 @@ export class CouponService {
     if (course.length !== dto.courses.length) {
       throw new BadRequestException('Invalid Course Seleted')
     }
+
+
     const coupon = await this.couponModel.create({
       ...dto,
       createdBy: Admin.userId,
@@ -36,7 +38,11 @@ export class CouponService {
   }
 
   async findAll() {
-    const coupon = await this.couponModel.find({ isActive: true }).populate({
+    const coupon = await this.couponModel.find({
+      isActive: true,
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() }
+    }).populate({
       path: 'courses', select: 'title', match: {
         isDeleted: false
       }
@@ -47,7 +53,11 @@ export class CouponService {
 
 
   async forpublicUse() {
-    const coupon = await this.couponModel.find({ isActive: true }).populate({
+    const coupon = await this.couponModel.find({
+      isActive: true,
+      startDate: { $lte: new Date() },
+      endDate: { $gte: new Date() }
+    }).populate({
       path: 'courses', select: 'title', match: {
         isDeleted: false
       }
@@ -82,7 +92,15 @@ export class CouponService {
 
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} coupon`;
+  async remove(id: string) {
+    const coupon = await this.couponModel.findByIdAndDelete(id, { new: true })
+    if (!coupon) {
+      throw new BadRequestException('Coupon not found')
+    }
+    return {
+      message: 'coupon deleted successfully',
+      coupon
+    }
+
   }
 }

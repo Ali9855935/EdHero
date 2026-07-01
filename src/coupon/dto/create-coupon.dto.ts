@@ -39,7 +39,7 @@ export class CreateCouponDto {
         example: '2026-07-31T23:59:59.000Z',
     })
     @IsString()
-    // @IsDateString()
+    @IsDateString()
     endDate: string;
 
     @ApiProperty({
