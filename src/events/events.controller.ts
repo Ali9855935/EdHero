@@ -23,7 +23,6 @@ import { Role } from 'src/admins/schemas/admin.schema';
 import { EventService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { PublishEventDto } from './dto/publish-event.dto';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -40,7 +39,7 @@ import {
 export class EventController {
   constructor(private readonly eventService: EventService) { }
 
-  @Post()
+  @Post('create-event')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TRAINER)
@@ -86,7 +85,7 @@ export class EventController {
     return this.eventService.create(dto, file);
   }
 
-  @Get()
+  @Get('findall-events')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TRAINER)
@@ -99,7 +98,7 @@ export class EventController {
     return this.eventService.websiteEvents();
   }
 
-  @Get(':id')
+  @Get('findby-event/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TRAINER)
@@ -115,7 +114,7 @@ export class EventController {
     return this.eventService.togglePublish(id);
   }
 
-  @Patch(':id')
+  @Patch('update-event/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TRAINER)
@@ -147,7 +146,7 @@ export class EventController {
     return this.eventService.update(id, dto, file);
   }
 
-  @Delete(':id')
+  @Delete('delete-event/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TRAINER)
