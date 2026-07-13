@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import type { KeyboardEvent } from 'react';
 import { ChevronDown, Search, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 
 export interface SelectOption<T> {
@@ -34,6 +34,7 @@ export function Select<T extends string | number>({
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  const shouldReduceMotion = useReducedMotion();
   
   const containerRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
@@ -109,8 +110,9 @@ export function Select<T extends string | number>({
   }, [focusedIndex]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const isInput = (e.target as HTMLElement).tagName === 'INPUT';
     if (!isOpen) {
-      if (e.key === 'ArrowDown' || e.key === 'Enter') {
+      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
         setIsOpen(true);
         e.preventDefault();
       }
@@ -132,6 +134,15 @@ export function Select<T extends string | number>({
           setIsOpen(false);
         }
         e.preventDefault();
+        break;
+      case ' ':
+        if (!isInput) {
+          if (focusedIndex >= 0 && filteredOptions[focusedIndex]) {
+            onChange(filteredOptions[focusedIndex].value);
+            setIsOpen(false);
+          }
+          e.preventDefault();
+        }
         break;
       case 'Escape':
         setIsOpen(false);
@@ -164,7 +175,8 @@ export function Select<T extends string | number>({
       {/* Select Trigger */}
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full px-4 py-2.5 rounded-lg bg-neutralDark-950 border text-sm text-white cursor-pointer select-none transition-all ${
+        tabIndex={0}
+        className={`flex items-center justify-between w-full px-4 py-2.5 rounded-lg bg-neutralDark-950 border text-sm text-white cursor-pointer select-none transition-all focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:outline-none ${
           isOpen ? 'border-brand-500 ring-2 ring-brand-500/20' : error ? 'border-accent-500' : 'border-neutralDark-800'
         }`}
       >
@@ -193,71 +205,74 @@ export function Select<T extends string | number>({
       )}
 
       {/* Dropdown Options List */}
-      <AnimatePresence>
-        {isOpen && createPortal(
-          <motion.div
-            ref={portalRef}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.15 }}
-            className="absolute z-[9999] bg-neutralDark-900 border border-neutralDark-800 rounded-lg shadow-xl overflow-hidden"
-            style={{
-              top: coords.top,
-              left: coords.left,
-              width: coords.width,
-            }}
-          >
-            {/* Search Input Box */}
-            {searchable && (
-              <div className="flex items-center gap-2 px-3 py-2 border-b border-neutralDark-800 bg-neutralDark-950/40">
-                <Search size={14} className="text-neutralDark-500" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search options..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent border-0 text-white placeholder-neutralDark-500 text-xs focus:outline-none"
-                />
-              </div>
-            )}
-
-            {/* List options */}
-            <div
-              ref={listRef}
-              className="max-h-56 overflow-y-auto py-1 divide-y divide-neutralDark-850/30"
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              ref={portalRef}
+              key="select-dropdown-list"
+              initial={shouldReduceMotion ? {} : { opacity: 0, y: 4 }}
+              animate={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}
+              exit={shouldReduceMotion ? {} : { opacity: 0, y: 4 }}
+              transition={shouldReduceMotion ? {} : { duration: 0.15 }}
+              className="absolute z-[9999] bg-neutralDark-900 border border-neutralDark-800 rounded-lg shadow-xl overflow-hidden"
+              style={{
+                top: coords.top,
+                left: coords.left,
+                width: coords.width,
+              }}
             >
-              {filteredOptions.length === 0 ? (
-                <div className="px-4 py-3 text-xs text-neutralDark-500 text-center">
-                  No options found
+              {/* Search Input Box */}
+              {searchable && (
+                <div className="flex items-center gap-2 px-3 py-2 border-b border-neutralDark-800 bg-neutralDark-950/40">
+                  <Search size={14} className="text-neutralDark-500" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search options..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-transparent border-0 text-white placeholder-neutralDark-500 text-xs focus:outline-none"
+                  />
                 </div>
-              ) : (
-                filteredOptions.map((opt, index) => {
-                  const isSelected = opt.value === value;
-                  const isFocused = index === focusedIndex;
-                  return (
-                    <div
-                      key={opt.value}
-                      onClick={() => handleSelect(opt.value)}
-                      className={`px-4 py-2.5 text-xs font-medium cursor-pointer transition-colors ${
-                        isSelected 
-                          ? 'bg-brand-500 text-white' 
-                          : isFocused 
-                            ? 'bg-neutralDark-800 text-white' 
-                            : 'text-neutralDark-300 hover:bg-neutralDark-800/60 hover:text-white'
-                      }`}
-                    >
-                      {opt.label}
-                    </div>
-                  );
-                })
               )}
-            </div>
-          </motion.div>,
-          document.body
-        )}
-      </AnimatePresence>
+
+              {/* List options */}
+              <div
+                ref={listRef}
+                className="max-h-56 overflow-y-auto py-1 divide-y divide-neutralDark-850/30"
+              >
+                {filteredOptions.length === 0 ? (
+                  <div className="px-4 py-3 text-xs text-neutralDark-500 text-center">
+                    No options found
+                  </div>
+                ) : (
+                  filteredOptions.map((opt, index) => {
+                    const isSelected = opt.value === value;
+                    const isFocused = index === focusedIndex;
+                    return (
+                      <div
+                        key={opt.value}
+                        onClick={() => handleSelect(opt.value)}
+                        className={`px-4 py-2.5 text-xs font-medium cursor-pointer transition-colors ${
+                          isSelected 
+                            ? 'bg-brand-500 text-white' 
+                            : isFocused 
+                              ? 'bg-neutralDark-800 text-white' 
+                              : 'text-neutralDark-300 hover:bg-neutralDark-800/60 hover:text-white'
+                        }`}
+                      >
+                        {opt.label}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

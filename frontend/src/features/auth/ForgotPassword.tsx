@@ -54,7 +54,7 @@ export const ForgotPassword = () => {
 
   return (
     <PageTransition>
-      <div className="bg-neutralDark-900 border border-neutralDark-800 rounded-2xl p-8 shadow-2xl relative animate-fadeIn">
+      <div className="bg-neutralDark-900 border border-neutralDark-800 rounded-2xl p-8 shadow-2xl relative animate-fade-in">
         {success ? (
           <div className="text-center space-y-6 py-4">
             <div className="mx-auto w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500">

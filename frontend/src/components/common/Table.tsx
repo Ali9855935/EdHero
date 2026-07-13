@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 export interface TableColumn<T> {
   key: keyof T | string;
@@ -27,6 +28,7 @@ export function Table<T extends Record<string, any>>({
   const [currentPage, setCurrentPage] = useState(1);
   const [sortKey, setSortKey] = useState<keyof T | string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const shouldReduceMotion = useReducedMotion();
 
   // Handle header click sorting
   const handleSort = (column: TableColumn<T>) => {
@@ -118,82 +120,104 @@ export function Table<T extends Record<string, any>>({
           </thead>
           
           <tbody className="divide-y divide-neutralDark-800/60 text-sm">
-            {paginatedData.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length} className="px-6 py-12 text-center text-neutralDark-500">
-                  {emptyMessage}
-                </td>
-              </tr>
-            ) : (
-              paginatedData.map((row, index) => (
-                <tr
-                  key={row.id || index}
-                  onClick={() => onRowClick?.(row)}
-                  className={`animate-fade-in opacity-0 transition-colors duration-150 ease-out ${
-                    onRowClick ? 'cursor-pointer hover:bg-brand-500/5' : 'hover:bg-neutralDark-800/40'
-                  }`}
-                  style={{ animationDelay: `${Math.min(index, 9) * 50}ms` }}
+            <AnimatePresence mode="popLayout">
+              {paginatedData.length === 0 ? (
+                <motion.tr
+                  initial={shouldReduceMotion ? {} : { opacity: 0 }}
+                  animate={shouldReduceMotion ? {} : { opacity: 1 }}
+                  exit={shouldReduceMotion ? {} : { opacity: 0 }}
+                  key="empty"
                 >
-                  {columns.map((col) => {
-                    const alignClass = 
-                      col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left';
-                    const cellValue = row[col.key as string];
-                    return (
-                      <td key={col.key as string} className={`px-6 py-4 text-neutralDark-300 ${alignClass}`}>
-                        {col.render ? col.render(cellValue, row) : cellValue}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))
-            )}
+                  <td colSpan={columns.length} className="px-6 py-12 text-center text-neutralDark-500">
+                    {emptyMessage}
+                  </td>
+                </motion.tr>
+              ) : (
+                paginatedData.map((row, index) => (
+                  <motion.tr
+                    layout={!shouldReduceMotion}
+                    initial={shouldReduceMotion ? {} : { opacity: 0, y: 4 }}
+                    animate={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}
+                    exit={shouldReduceMotion ? {} : { opacity: 0, y: -4 }}
+                    transition={shouldReduceMotion ? {} : { duration: 0.15, delay: Math.min(index, 5) * 0.03 }}
+                    key={row.id || index}
+                    onClick={() => onRowClick?.(row)}
+                    className={`transition-colors duration-150 ease-out ${
+                      onRowClick ? 'cursor-pointer hover:bg-brand-500/5' : 'hover:bg-neutralDark-800/40'
+                    }`}
+                  >
+                    {columns.map((col) => {
+                      const alignClass = 
+                        col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left';
+                      const cellValue = row[col.key as string];
+                      return (
+                        <td key={col.key as string} className={`px-6 py-4 text-neutralDark-300 ${alignClass}`}>
+                          {col.render ? col.render(cellValue, row) : cellValue}
+                        </td>
+                      );
+                    })}
+                  </motion.tr>
+                ))
+              )}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>
 
-      {/* Mobile Card Stack layout */}
       <div className="sm:hidden divide-y divide-neutralDark-800/40 bg-neutralDark-900">
-        {paginatedData.length === 0 ? (
-          <div className="px-6 py-12 text-center text-neutralDark-500 text-sm">
-            {emptyMessage}
-          </div>
-        ) : (
-          paginatedData.map((row, rowIndex) => (
-            <div
-              key={row.id || rowIndex}
-              onClick={() => onRowClick?.(row)}
-              className={`p-4 space-y-3 animate-fade-in opacity-0 transition-colors duration-150 ease-out ${
-                onRowClick ? 'cursor-pointer active:bg-neutralDark-850 hover:bg-neutralDark-850/20' : ''
-              }`}
-              style={{ animationDelay: `${Math.min(rowIndex, 9) * 50}ms` }}
+        <AnimatePresence mode="popLayout">
+          {paginatedData.length === 0 ? (
+            <motion.div
+              initial={shouldReduceMotion ? {} : { opacity: 0 }}
+              animate={shouldReduceMotion ? {} : { opacity: 1 }}
+              exit={shouldReduceMotion ? {} : { opacity: 0 }}
+              key="mobile-empty"
+              className="px-6 py-12 text-center text-neutralDark-500 text-sm"
             >
-              {columns.map((col) => {
-                const cellValue = row[col.key as string];
-                const isActionColumn = col.key === 'actions' || col.key === 'update' || col.key === 'link';
-                
-                if (isActionColumn) {
+              {emptyMessage}
+            </motion.div>
+          ) : (
+            paginatedData.map((row, rowIndex) => (
+              <motion.div
+                layout={!shouldReduceMotion}
+                initial={shouldReduceMotion ? {} : { opacity: 0, y: 4 }}
+                animate={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}
+                exit={shouldReduceMotion ? {} : { opacity: 0, y: -4 }}
+                transition={shouldReduceMotion ? {} : { duration: 0.15, delay: Math.min(rowIndex, 5) * 0.03 }}
+                key={row.id || rowIndex}
+                onClick={() => onRowClick?.(row)}
+                className={`p-4 space-y-3 transition-colors duration-150 ease-out ${
+                  onRowClick ? 'cursor-pointer active:bg-neutralDark-850 hover:bg-neutralDark-850/20' : ''
+                }`}
+              >
+                {columns.map((col) => {
+                  const cellValue = row[col.key as string];
+                  const isActionColumn = col.key === 'actions' || col.key === 'update' || col.key === 'link';
+                  
+                  if (isActionColumn) {
+                    return (
+                      <div 
+                        key={col.key as string} 
+                        className="flex justify-end pt-2 border-t border-neutralDark-800/60"
+                      >
+                        {col.render ? col.render(cellValue, row) : cellValue}
+                      </div>
+                    );
+                  }
+
                   return (
-                    <div 
-                      key={col.key as string} 
-                      className="flex justify-end pt-2 border-t border-neutralDark-800/60"
-                    >
-                      {col.render ? col.render(cellValue, row) : cellValue}
+                    <div key={col.key as string} className="flex justify-between items-start text-xs gap-4">
+                      <span className="font-semibold text-neutralDark-500 uppercase tracking-wider">{col.header}</span>
+                      <span className="text-neutralDark-200 text-right">
+                        {col.render ? col.render(cellValue, row) : cellValue}
+                      </span>
                     </div>
                   );
-                }
-
-                return (
-                  <div key={col.key as string} className="flex justify-between items-start text-xs gap-4">
-                    <span className="font-semibold text-neutralDark-500 uppercase tracking-wider">{col.header}</span>
-                    <span className="text-neutralDark-200 text-right">
-                      {col.render ? col.render(cellValue, row) : cellValue}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          ))
-        )}
+                })}
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Pagination Footer */}

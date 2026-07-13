@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { Bell, Search, Menu, X } from 'lucide-react';
 import Badge from '../common/Badge';
@@ -16,12 +16,27 @@ export const TopNavbar = ({
   const { user } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   return (
     <header className="h-16 bg-neutralDark-900 border-b border-neutralDark-800 flex items-center justify-between px-4 sm:px-6 z-20 flex-shrink-0 relative">
       {/* Mobile Search Overlay Input */}
       {searchExpanded ? (
-        <div className="absolute inset-x-0 inset-y-0 bg-neutralDark-900 px-4 flex items-center gap-3 z-30 animate-fadeIn">
+        <div className="absolute inset-x-0 inset-y-0 bg-neutralDark-900 px-4 flex items-center gap-3 z-30 animate-fade-in">
           <div className="relative flex-1">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-neutralDark-400 pointer-events-none">
               <Search size={16} />
@@ -90,7 +105,7 @@ export const TopNavbar = ({
         <div className="h-8 w-[1px] bg-neutralDark-800" />
 
         {/* User profile dropdown button */}
-        <div className="relative">
+        <div ref={dropdownRef} className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="flex items-center gap-2 sm:gap-3 p-1.5 rounded-lg hover:bg-neutralDark-800 transition-colors cursor-pointer select-none"

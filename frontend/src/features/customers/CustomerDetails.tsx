@@ -331,7 +331,7 @@ export const CustomerDetails = () => {
 
               {/* Inline Form to Add Contact */}
               {inlineFormOpen && (
-                <form onSubmit={handleAddContactSubmit} className="bg-neutralDark-950 p-4 border border-neutralDark-850 rounded-xl space-y-4 animate-fadeIn">
+                <form onSubmit={handleAddContactSubmit} className="bg-neutralDark-950 p-4 border border-neutralDark-850 rounded-xl space-y-4 animate-fade-in">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
                       label="Contact Name"

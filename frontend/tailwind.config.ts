@@ -32,6 +32,7 @@ export default {
           600: '#475569',
           700: '#334155',
           800: '#131326', // Deep space dark 
+          850: '#0e0f1f', // Intermediate dark border/hover
           900: '#0a0b18', // Space primary dark
           950: '#04050d',
         },

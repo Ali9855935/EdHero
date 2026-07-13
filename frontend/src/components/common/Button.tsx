@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -21,13 +21,14 @@ export const Button = ({
   type = 'button',
   ...props
 }: ButtonProps) => {
+  const shouldReduceMotion = useReducedMotion();
   const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none';
   
   const variants: Record<ButtonVariant, string> = {
-    primary: 'bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 focus:ring-brand-500/20 border border-brand-700/50',
+    primary: 'bg-gradient-to-r from-brand-600 to-purple-650 hover:from-brand-500 hover:to-purple-550 text-white shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 focus:ring-brand-500/20 border border-brand-700/50',
     secondary: 'bg-neutralDark-800 hover:bg-neutralDark-700 text-neutralDark-100 hover:text-white border border-neutralDark-700 focus:ring-neutralDark-700/40',
     danger: 'bg-accent-500 hover:bg-accent-600 text-white shadow-lg shadow-accent-500/10 hover:shadow-accent-500/20 focus:ring-accent-500/20 border border-accent-600',
-    ghost: 'bg-transparent hover:bg-neutralDark-800 text-neutralDark-300 hover:text-white border border-transparent focus:ring-neutralDark-850/40',
+    ghost: 'bg-transparent hover:bg-neutralDark-800 text-neutralDark-300 hover:text-white border border-transparent focus:ring-neutralDark-800/45',
   };
 
   const sizes: Record<ButtonSize, string> = {
@@ -37,10 +38,14 @@ export const Button = ({
   };
 
   const isDisabled = disabled || loading;
+  
+  const hoverAnimation = shouldReduceMotion || isDisabled ? {} : { scale: 1.02, y: -0.5 };
+  const tapAnimation = shouldReduceMotion || isDisabled ? {} : { scale: 0.98, y: 0 };
 
   return (
     <motion.button
-      whileTap={isDisabled ? {} : { scale: 0.97 }}
+      whileHover={hoverAnimation}
+      whileTap={tapAnimation}
       type={type}
       disabled={isDisabled}
       className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}

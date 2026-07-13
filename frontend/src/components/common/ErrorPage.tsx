@@ -1,5 +1,6 @@
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Button from './Button';
 
 interface ErrorPageProps {
   message?: string;
@@ -26,13 +27,15 @@ export const ErrorPage = ({
       </p>
 
       {onRetry && (
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={onRetry}
-          className="mt-6 flex items-center gap-2 py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold text-xs rounded-lg transition-all shadow-md shadow-red-500/10 cursor-pointer"
+          className="mt-6 gap-2 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white"
         >
           <RefreshCw size={14} />
           Retry Request
-        </button>
+        </Button>
       )}
     </motion.div>
   );
